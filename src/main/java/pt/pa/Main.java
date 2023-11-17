@@ -55,5 +55,10 @@ public class Main {
         universityNetwork.addGroupRelationship("Colega de Grupo PA.1", student6.getId(), student7.getId());
         universityNetwork.addClassRelationship("PA", docente1.getId(), student7.getId());
         universityNetwork.addClassRelationship("PA", docente1.getId(), student3.getId());
+
+        System.out.println(universityNetwork.toStringTeachersStudent());
     }
+
+
 }
+
