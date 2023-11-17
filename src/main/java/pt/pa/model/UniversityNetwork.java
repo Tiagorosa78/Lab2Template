@@ -109,23 +109,95 @@ public class UniversityNetwork {
     }
 
     public String toStringTeachersStudent() {
-        StringBuilder result = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
         for (Vertex<Person> vertex : network.vertices()) {
             Person person = (Person) vertex.element();
 
             if (person.getRole() == Person.PersonRole.TEACHER) {
-                result.append("Professor ").append(person.getName()).append("(").append(person.getId()).append(")\n");
+                sb.append("Professor ").append(person.getName()).append("(").append(person.getId()).append(")\n");
 
                 for (Edge<Relationship, Person> edge : network.incidentEdges(vertex)) {
                     Vertex<Person> studentVertex = network.opposite(vertex, edge);
                     Person student = (Person) studentVertex.element();
 
-                    result.append("\tde ").append(getRelationships(person.getId(), student.getId())).append(" de Aluno ").append(student.getName()).append("(").append(student.getId()).append(")\n");
+                    sb.append("\tde ").append(getRelationships(person.getId(), student.getId())).append(" de Aluno ").append(student.getName()).append("(").append(student.getId()).append(")\n");
                 }
             }
         }
 
-        return result.toString();
+        return sb.toString();
+    }
+
+    public int getNumberOfStudents(int id) throws NetworkException {
+        if(findPerson(id) == null || findPerson(id).element().getRole() != Person.PersonRole.TEACHER){
+            throw new NetworkException("ID not valid.");
+        }
+
+        int numberOfStudents = 0;
+
+        for (Edge<Relationship, Person> edge : network.edges()) {
+            Relationship rel = edge.element();
+            Person person1 = edge.vertices()[0].element();
+            Person person2 = edge.vertices()[1].element();
+
+            if (rel.isRole(Relationship.RelRole.CLASS) &&
+                    person1.getId() == id &&
+                    person2.getRole() == Person.PersonRole.STUDENT) {
+                numberOfStudents++;
+            }
+        }
+
+        return numberOfStudents;
+    }
+
+    public Person getMostPopularPerson() {
+        Person mostPopularPerson = null;
+        int maxPopularity = 0;
+
+        for (Vertex<Person> vertex : network.vertices()) {
+            if (vertex.element() instanceof Person) {
+                Person currentPerson = (Person) vertex.element();
+                int currentPopularity = 0;
+
+                for (Edge<Relationship, Person> edge : network.incidentEdges(vertex)) {
+                    // Conta todas as arestas incidentes para a pessoa
+                    currentPopularity++;
+                }
+
+                if (currentPopularity > maxPopularity) {
+                    mostPopularPerson = currentPerson;
+                    maxPopularity = currentPopularity;
+                }
+            }
+        }
+
+        return mostPopularPerson;
+    }
+
+    public void removeRelationships(int id1, int id2) throws NetworkException {
+        Vertex<Person> personVertex1 = findPerson(id1);
+        Vertex<Person> personVertex2 = findPerson(id2);
+
+        if (personVertex1 != null && personVertex2 != null) {
+            try {
+                List<Edge<Relationship, Person>> edgesToRemove = new ArrayList<>();
+
+                // Collect edges to remove
+                for (Edge<Relationship, Person> edge : network.incidentEdges(personVertex1)) {
+                    Vertex<Person>[] vertices = edge.vertices();
+                    if (vertices[0] == personVertex2 || vertices[1] == personVertex2) {
+                        edgesToRemove.add(edge);
+                    }
+                }
+
+                // Remove the collected edges
+                for (Edge<Relationship, Person> edge : edgesToRemove) {
+                    network.removeEdge(edge);
+                }
+            } catch (NetworkException e) {
+                throw new NetworkException("Relationship does not exist.");
+            }
+        }
     }
 }

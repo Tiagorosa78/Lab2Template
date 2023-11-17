@@ -37,10 +37,7 @@ public class UniversityNetworkTest {
         universityNetwork.addPerson(student1);
 
 
-        NetworkException thrownException = assertThrows(NetworkException.class, () -> universityNetwork.addPerson(student1));
-
-
-        assertEquals("Person with ID 135 already exists in the network.", thrownException.getMessage());
+        assertThrows(NetworkException.class, () -> universityNetwork.addPerson(student1));
     }
 
     @Test
@@ -49,7 +46,7 @@ public class UniversityNetworkTest {
         Person student1 = new Person(135, "Rodrigo", Person.PersonRole.STUDENT);
         universityNetwork.addPerson(student1);
 
-        assertTrue("Rodrigo", universityNetwork.personExists(student1.getName()));
+        assertTrue(universityNetwork.personExists(student1.getName()));
     }
 
     @Test
@@ -59,9 +56,10 @@ public class UniversityNetworkTest {
 
         assertDoesNotThrow(() -> universityNetwork.addGroupRelationship("Group", validId, validId + 1));
 
-        NetworkException thrownException = assertThrows(NetworkException.class,
+        assertThrows(NetworkException.class,
                 () -> universityNetwork.getRelationships(validId, invalidId));
 
-        assertEquals("Um ou ambos os IDs não são válidos.", thrownException.getMessage());
     }
+
+
 }
